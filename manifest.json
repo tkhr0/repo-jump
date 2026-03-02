@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Repo Jump",
+  "version": "0.1.0",
+  "description": "GitHub リポジトリへの高速アクセスを提供する fuzzy finder パレット",
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["data.js", "content.js"],
+      "css": ["style.css"]
+    }
+  ]
+}
