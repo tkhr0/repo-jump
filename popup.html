@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <h1 class="popup-title">Repo Jump</h1>
+
+    <div class="popup-section">
+      <label class="popup-label" for="pat-input">GitHub Personal Access Token</label>
+      <input type="password" id="pat-input" class="popup-input" placeholder="ghp_xxxxxxxxxxxx">
+      <button id="save-pat" class="popup-btn popup-btn-secondary">保存</button>
+    </div>
+
+    <div class="popup-section">
+      <button id="refresh-btn" class="popup-btn popup-btn-primary">リポジトリを更新</button>
+    </div>
+
+    <div id="status" class="popup-status"></div>
+
+    <div class="popup-info">
+      <span id="repo-count"></span>
+      <span id="last-fetched"></span>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
