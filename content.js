@@ -278,9 +278,15 @@
 
     if (!isOpen) return;
 
+    // パレット開放時は全キーの伝播を止める
+    e.stopPropagation();
+    // Cmd/Ctrl との組み合わせ（コピペ等）はブラウザ標準操作を維持
+    if (!(e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+    }
+
     switch (e.key) {
       case "ArrowDown":
-        e.preventDefault();
         if (filteredItems.length > 0) {
           selectedIndex = (selectedIndex + 1) % filteredItems.length;
           render();
@@ -288,7 +294,6 @@
         break;
 
       case "ArrowUp":
-        e.preventDefault();
         if (filteredItems.length > 0) {
           selectedIndex =
             (selectedIndex - 1 + filteredItems.length) % filteredItems.length;
@@ -297,12 +302,10 @@
         break;
 
       case "Enter":
-        e.preventDefault();
         selectCurrent();
         break;
 
       case "Escape":
-        e.preventDefault();
         closePalette();
         break;
 
@@ -310,7 +313,6 @@
         // スペース後が空の時 → リポジトリ検索モードに戻る
         const { destQuery } = parseInput(input.value);
         if (destQuery === "") {
-          e.preventDefault();
           // スペースを削除してリポジトリ検索モードに戻す
           const spaceIndex = input.value.indexOf(" ");
           if (spaceIndex !== -1) {
@@ -322,7 +324,7 @@
         break;
       }
     }
-  });
+  }, { capture: true });
 
   input.addEventListener("input", () => {
     selectedIndex = 0;
