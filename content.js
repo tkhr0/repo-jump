@@ -267,10 +267,11 @@
   }
 
   // ── イベントハンドラ ──
+
+  // document リスナー: Cmd+K のパレット開閉のみ担当
   document.addEventListener(
     "keydown",
     (e) => {
-      // Cmd+K (Mac) / Ctrl+K (Windows) でトグル
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         e.stopPropagation();
@@ -279,60 +280,64 @@
         } else {
           openPalette();
         }
-        return;
-      }
-
-      if (!isOpen) return;
-
-      // パレット開放時は全キーの伝播を止める
-      e.stopPropagation();
-      // Cmd/Ctrl との組み合わせ（コピペ等）はブラウザ標準操作を維持
-      if (!(e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-      }
-
-      switch (e.key) {
-        case "ArrowDown":
-          if (filteredItems.length > 0) {
-            selectedIndex = (selectedIndex + 1) % filteredItems.length;
-            render();
-          }
-          break;
-
-        case "ArrowUp":
-          if (filteredItems.length > 0) {
-            selectedIndex =
-              (selectedIndex - 1 + filteredItems.length) % filteredItems.length;
-            render();
-          }
-          break;
-
-        case "Enter":
-          selectCurrent();
-          break;
-
-        case "Escape":
-          closePalette();
-          break;
-
-        case "Backspace": {
-          // スペース後が空の時 → リポジトリ検索モードに戻る
-          const { destQuery } = parseInput(input.value);
-          if (destQuery === "") {
-            // スペースを削除してリポジトリ検索モードに戻す
-            const spaceIndex = input.value.indexOf(" ");
-            if (spaceIndex !== -1) {
-              input.value = input.value.substring(0, spaceIndex);
-              selectedIndex = 0;
-              updateFilter();
-            }
-          }
-          break;
-        }
       }
     },
     { capture: true },
   );
+
+  // input リスナー: パレット内のキーボード操作を担当
+  input.addEventListener("keydown", (e) => {
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        e.stopPropagation();
+        if (filteredItems.length > 0) {
+          selectedIndex = (selectedIndex + 1) % filteredItems.length;
+          render();
+        }
+        return;
+
+      case "ArrowUp":
+        e.preventDefault();
+        e.stopPropagation();
+        if (filteredItems.length > 0) {
+          selectedIndex =
+            (selectedIndex - 1 + filteredItems.length) % filteredItems.length;
+          render();
+        }
+        return;
+
+      case "Enter":
+        e.preventDefault();
+        e.stopPropagation();
+        selectCurrent();
+        return;
+
+      case "Escape":
+        e.preventDefault();
+        e.stopPropagation();
+        closePalette();
+        return;
+
+      case "Backspace": {
+        // スペース後が空の時 → リポジトリ検索モードに戻る
+        const { destQuery } = parseInput(input.value);
+        if (destQuery === "") {
+          e.stopPropagation();
+          const spaceIndex = input.value.indexOf(" ");
+          if (spaceIndex !== -1) {
+            input.value = input.value.substring(0, spaceIndex);
+            selectedIndex = 0;
+            updateFilter();
+          }
+        }
+        return;
+      }
+    }
+
+    // その他のキー: ページへの伝播は防止、文字入力は許可
+    e.stopPropagation();
+  });
 
   input.addEventListener("input", () => {
     selectedIndex = 0;
