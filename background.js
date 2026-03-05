@@ -1,8 +1,7 @@
 // background.js - Service Worker（GitHub API、データ管理）
 
-async function fetchAllRepos(pat) {
-  const repos = [];
-  let url = "https://api.github.com/user/repos?per_page=100&type=all&sort=updated";
+async function fetchPaginated(url, pat) {
+  const results = [];
 
   while (url) {
     const response = await fetch(url, {
@@ -17,16 +16,51 @@ async function fetchAllRepos(pat) {
     }
 
     const data = await response.json();
-    for (const repo of data) {
+    results.push(...data);
+
+    const linkHeader = response.headers.get("Link");
+    url = parseLinkHeader(linkHeader);
+  }
+
+  return results;
+}
+
+async function fetchAllRepos(pat) {
+  // 1. 個人リポジトリを取得
+  const ownRepos = await fetchPaginated(
+    "https://api.github.com/user/repos?per_page=100&type=owner&sort=updated",
+    pat
+  );
+
+  // 2. 所属 org 一覧を取得
+  const orgs = await fetchPaginated(
+    "https://api.github.com/user/orgs",
+    pat
+  );
+
+  // 3. 各 org のリポジトリを取得
+  const orgRepoArrays = await Promise.all(
+    orgs.map((org) =>
+      fetchPaginated(
+        `https://api.github.com/orgs/${org.login}/repos?per_page=100&sort=updated`,
+        pat
+      )
+    )
+  );
+
+  // 4. 結合して重複除去
+  const allRawRepos = [...ownRepos, ...orgRepoArrays.flat()];
+  const seen = new Set();
+  const repos = [];
+
+  for (const repo of allRawRepos) {
+    if (!seen.has(repo.full_name)) {
+      seen.add(repo.full_name);
       repos.push({
         fullName: repo.full_name,
         updatedAt: repo.updated_at,
       });
     }
-
-    // Link ヘッダーで次ページを辿る
-    const linkHeader = response.headers.get("Link");
-    url = parseLinkHeader(linkHeader);
   }
 
   return repos;
