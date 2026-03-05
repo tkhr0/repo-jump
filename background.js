@@ -12,7 +12,9 @@ async function fetchPaginated(url, pat) {
     });
 
     if (!response.ok) {
-      throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `GitHub API error: ${response.status} ${response.statusText}`,
+      );
     }
 
     const data = await response.json();
@@ -29,23 +31,20 @@ async function fetchAllRepos(pat) {
   // 1. 個人リポジトリを取得
   const ownRepos = await fetchPaginated(
     "https://api.github.com/user/repos?per_page=100&type=owner&sort=updated",
-    pat
+    pat,
   );
 
   // 2. 所属 org 一覧を取得
-  const orgs = await fetchPaginated(
-    "https://api.github.com/user/orgs",
-    pat
-  );
+  const orgs = await fetchPaginated("https://api.github.com/user/orgs", pat);
 
   // 3. 各 org のリポジトリを取得
   const orgRepoArrays = await Promise.all(
     orgs.map((org) =>
       fetchPaginated(
         `https://api.github.com/orgs/${org.login}/repos?per_page=100&sort=updated`,
-        pat
-      )
-    )
+        pat,
+      ),
+    ),
   );
 
   // 4. 結合して重複除去

@@ -147,7 +147,7 @@
         const results = FuzzySearch.fuzzyFilter(
           repoQuery,
           repositories,
-          (r) => r.fullName
+          (r) => r.fullName,
         );
         filteredItems = results.map((r) => ({
           label: r.item.fullName,
@@ -162,7 +162,7 @@
       const repoResults = FuzzySearch.fuzzyFilter(
         repoQuery,
         repositories,
-        (r) => r.fullName
+        (r) => r.fullName,
       );
 
       if (repoResults.length === 0) {
@@ -182,7 +182,7 @@
           const destResults = FuzzySearch.fuzzyFilter(
             destQuery,
             DESTINATIONS,
-            (d) => d.label
+            (d) => d.label,
           );
           filteredItems = destResults.map((r) => ({
             label: `${topRepo} \u00B7 ${r.item.label}`,
@@ -195,7 +195,7 @@
 
     selectedIndex = Math.min(
       selectedIndex,
-      Math.max(0, filteredItems.length - 1)
+      Math.max(0, filteredItems.length - 1),
     );
     render();
   }
@@ -225,33 +225,26 @@
   // ── 最近開いた履歴を保存 ──
   function saveRecent(fullName) {
     if (!chrome.runtime?.id) return;
-    try {
-      chrome.runtime.sendMessage({
+    chrome.runtime
+      .sendMessage({
         type: "SAVE_RECENT",
         fullName: fullName,
-      });
-    } catch (e) {
-      console.warn("Repo Jump: sendMessage failed (context invalidated)", e);
-    }
+      })
+      .catch(() => {});
   }
 
   // ── リポジトリデータを取得 ──
   async function loadRepos() {
     if (!chrome.runtime?.id) return;
-    return new Promise((resolve) => {
-      try {
-        chrome.runtime.sendMessage({ type: "GET_REPOS" }, (response) => {
-          if (response) {
-            repositories = response.repositories || [];
-            recentlyOpened = response.recentlyOpened || [];
-          }
-          resolve();
-        });
-      } catch (e) {
-        console.warn("Repo Jump: sendMessage failed (context invalidated)", e);
-        resolve();
+    try {
+      const response = await chrome.runtime.sendMessage({ type: "GET_REPOS" });
+      if (response) {
+        repositories = response.repositories || [];
+        recentlyOpened = response.recentlyOpened || [];
       }
-    });
+    } catch {
+      // Extension context invalidated — 静かに失敗
+    }
   }
 
   // ── パレット開閉 ──
@@ -274,68 +267,72 @@
   }
 
   // ── イベントハンドラ ──
-  document.addEventListener("keydown", (e) => {
-    // Cmd+K (Mac) / Ctrl+K (Windows) でトグル
-    if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-      e.preventDefault();
+  document.addEventListener(
+    "keydown",
+    (e) => {
+      // Cmd+K (Mac) / Ctrl+K (Windows) でトグル
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        e.stopPropagation();
+        if (isOpen) {
+          closePalette();
+        } else {
+          openPalette();
+        }
+        return;
+      }
+
+      if (!isOpen) return;
+
+      // パレット開放時は全キーの伝播を止める
       e.stopPropagation();
-      if (isOpen) {
-        closePalette();
-      } else {
-        openPalette();
+      // Cmd/Ctrl との組み合わせ（コピペ等）はブラウザ標準操作を維持
+      if (!(e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
       }
-      return;
-    }
 
-    if (!isOpen) return;
-
-    // パレット開放時は全キーの伝播を止める
-    e.stopPropagation();
-    // Cmd/Ctrl との組み合わせ（コピペ等）はブラウザ標準操作を維持
-    if (!(e.metaKey || e.ctrlKey)) {
-      e.preventDefault();
-    }
-
-    switch (e.key) {
-      case "ArrowDown":
-        if (filteredItems.length > 0) {
-          selectedIndex = (selectedIndex + 1) % filteredItems.length;
-          render();
-        }
-        break;
-
-      case "ArrowUp":
-        if (filteredItems.length > 0) {
-          selectedIndex =
-            (selectedIndex - 1 + filteredItems.length) % filteredItems.length;
-          render();
-        }
-        break;
-
-      case "Enter":
-        selectCurrent();
-        break;
-
-      case "Escape":
-        closePalette();
-        break;
-
-      case "Backspace": {
-        // スペース後が空の時 → リポジトリ検索モードに戻る
-        const { destQuery } = parseInput(input.value);
-        if (destQuery === "") {
-          // スペースを削除してリポジトリ検索モードに戻す
-          const spaceIndex = input.value.indexOf(" ");
-          if (spaceIndex !== -1) {
-            input.value = input.value.substring(0, spaceIndex);
-            selectedIndex = 0;
-            updateFilter();
+      switch (e.key) {
+        case "ArrowDown":
+          if (filteredItems.length > 0) {
+            selectedIndex = (selectedIndex + 1) % filteredItems.length;
+            render();
           }
+          break;
+
+        case "ArrowUp":
+          if (filteredItems.length > 0) {
+            selectedIndex =
+              (selectedIndex - 1 + filteredItems.length) % filteredItems.length;
+            render();
+          }
+          break;
+
+        case "Enter":
+          selectCurrent();
+          break;
+
+        case "Escape":
+          closePalette();
+          break;
+
+        case "Backspace": {
+          // スペース後が空の時 → リポジトリ検索モードに戻る
+          const { destQuery } = parseInput(input.value);
+          if (destQuery === "") {
+            // スペースを削除してリポジトリ検索モードに戻す
+            const spaceIndex = input.value.indexOf(" ");
+            if (spaceIndex !== -1) {
+              input.value = input.value.substring(0, spaceIndex);
+              selectedIndex = 0;
+              updateFilter();
+            }
+          }
+          break;
         }
-        break;
       }
-    }
-  }, { capture: true });
+    },
+    { capture: true },
+  );
 
   input.addEventListener("input", () => {
     selectedIndex = 0;
