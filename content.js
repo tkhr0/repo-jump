@@ -224,22 +224,33 @@
 
   // ── 最近開いた履歴を保存 ──
   function saveRecent(fullName) {
-    chrome.runtime.sendMessage({
-      type: "SAVE_RECENT",
-      fullName: fullName,
-    });
+    if (!chrome.runtime?.id) return;
+    try {
+      chrome.runtime.sendMessage({
+        type: "SAVE_RECENT",
+        fullName: fullName,
+      });
+    } catch (e) {
+      console.warn("Repo Jump: sendMessage failed (context invalidated)", e);
+    }
   }
 
   // ── リポジトリデータを取得 ──
   async function loadRepos() {
+    if (!chrome.runtime?.id) return;
     return new Promise((resolve) => {
-      chrome.runtime.sendMessage({ type: "GET_REPOS" }, (response) => {
-        if (response) {
-          repositories = response.repositories || [];
-          recentlyOpened = response.recentlyOpened || [];
-        }
+      try {
+        chrome.runtime.sendMessage({ type: "GET_REPOS" }, (response) => {
+          if (response) {
+            repositories = response.repositories || [];
+            recentlyOpened = response.recentlyOpened || [];
+          }
+          resolve();
+        });
+      } catch (e) {
+        console.warn("Repo Jump: sendMessage failed (context invalidated)", e);
         resolve();
-      });
+      }
     });
   }
 
