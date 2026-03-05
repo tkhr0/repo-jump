@@ -30,7 +30,7 @@ async function fetchPaginated(url, pat) {
 async function fetchAllRepos(pat) {
   // 1. 個人リポジトリを取得
   const ownRepos = await fetchPaginated(
-    "https://api.github.com/user/repos?per_page=100&type=owner&sort=updated",
+    "https://api.github.com/user/repos?per_page=100&type=all&sort=updated",
     pat,
   );
 
