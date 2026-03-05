@@ -211,14 +211,14 @@
       const fullName = item.data.fullName;
       saveRecent(fullName);
       closePalette();
-      window.location.href = `https://github.com/${fullName}`;
+      window.open(`https://github.com/${fullName}`, '_blank');
     } else if (item.data.type === "dest") {
       // 遷移先選択 → 該当ページに遷移
       const fullName = item.data.fullName;
       const path = item.data.path;
       saveRecent(fullName);
       closePalette();
-      window.location.href = `https://github.com/${fullName}${path}`;
+      window.open(`https://github.com/${fullName}${path}`, '_blank');
     }
   }
 
