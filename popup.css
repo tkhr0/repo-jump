@@ -1,0 +1,113 @@
+/* popup.css - 設定画面スタイル */
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  color: #1f2328;
+  background: #ffffff;
+}
+
+.popup-container {
+  width: 320px;
+  padding: 16px;
+}
+
+.popup-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  color: #1f2328;
+}
+
+.popup-section {
+  margin-bottom: 12px;
+}
+
+.popup-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #656d76;
+  margin-bottom: 4px;
+}
+
+.popup-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #1f2328;
+  background: #f6f8fa;
+  box-sizing: border-box;
+  margin-bottom: 8px;
+}
+
+.popup-input:focus {
+  outline: none;
+  border-color: #0969da;
+  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15);
+}
+
+.popup-btn {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+}
+
+.popup-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.popup-btn-primary {
+  background: #2da44e;
+  color: #ffffff;
+  border-color: #2da44e;
+}
+
+.popup-btn-primary:hover:not(:disabled) {
+  background: #218838;
+}
+
+.popup-btn-secondary {
+  background: #f6f8fa;
+  color: #1f2328;
+}
+
+.popup-btn-secondary:hover:not(:disabled) {
+  background: #eaeef2;
+}
+
+.popup-status {
+  font-size: 12px;
+  margin-bottom: 8px;
+  min-height: 18px;
+}
+
+.popup-status-success {
+  color: #1a7f37;
+}
+
+.popup-status-error {
+  color: #cf222e;
+}
+
+.popup-status-loading {
+  color: #656d76;
+}
+
+.popup-info {
+  font-size: 12px;
+  color: #656d76;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
